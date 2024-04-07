@@ -40,18 +40,17 @@ func (r *userRepositoryImpl) Create(user *models.UserRegisterDTO) error {
 }
 
 func (r *userRepositoryImpl) FindByEmail(email string) (*models.User, error) {
-	var(
-		firstName = "ilhamgepe"
-		lastName = "ilhamgepe"
-	)
-	return &models.User{
-		ID: 1,
-		FirstName: &firstName,
-		LastName: &lastName,
-		Email: "ilham@gmail.com",
-		Password: "ilhamgepe",		
-	},nil
+	var user models.User
+	q := "SELECT * FROM users WHERE email = ?"
+	if err := r.DB.QueryRow(q, email).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
 }
+
 func (r *userRepositoryImpl) FindById(id int) (*models.User, error) {
 		var(
 		firstName = "ilhamgepe"

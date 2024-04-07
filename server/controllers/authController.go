@@ -48,11 +48,11 @@ func (ac *AuthController) Login(c *gin.Context){
 		return
 	}
 
-	match,err  := ac.authUsecase.Login(loginData.Email, loginData.Password)
+	res,err  := ac.authUsecase.Login(loginData.Email, loginData.Password)
 	if err != nil{
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"match": match})
+	c.JSON(http.StatusOK, gin.H{"message": "success", "data": res})
 }
