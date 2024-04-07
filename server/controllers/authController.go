@@ -56,3 +56,19 @@ func (ac *AuthController) Login(c *gin.Context){
 
 	c.JSON(http.StatusOK, gin.H{"message": "success", "data": res})
 }
+
+func (ac *AuthController) Refresh(c *gin.Context){
+	claims, err := helper.ValidateRefreshToken(c.Request.Header.Get("Authorization"))
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"error":"unauthorized"})
+		return
+	}
+
+	res, err := ac.authUsecase.Refresh(claims.Email)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"error":"unauthorized"})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"data":res})
+}
+

@@ -13,7 +13,8 @@ type UserRepository interface {
 	Create(user *models.UserRegisterDTO)error
 	FindByEmail(email string) (*models.User, error)
 	FindById(id int) (*models.User, error)
-	Update(user *models.User) (*models.User, error)
+	Update(user *models.User)  error
+	UpdatePassword(id int, password string) error
 }
 
 type userRepositoryImpl struct {
@@ -52,28 +53,49 @@ func (r *userRepositoryImpl) FindByEmail(email string) (*models.User, error) {
 }
 
 func (r *userRepositoryImpl) FindById(id int) (*models.User, error) {
-		var(
-		firstName = "ilhamgepe"
-		lastName = "ilhamgepe"
-	)
-	return &models.User{
-		ID: 1,
-		FirstName: &firstName,
-		LastName: &lastName,
-		Email: "ilham@gmail.com",
-		Password: "ilhamgepe",		
-	},nil
+	var user models.User
+	q := "SELECT * FROM users WHERE id = ?"
+	if err := r.DB.QueryRow(q, id).Scan(&user.ID, &user.FirstName, &user.LastName, &user.Email, &user.Password, &user.CreatedAt, &user.UpdatedAt); err != nil {
+		if errors.Is(err, sql.ErrNoRows) {
+			return nil, errors.New("user not found")
+		}
+		return nil, err
+	}
+	return &user, nil
 }
-func (r *userRepositoryImpl) Update(user *models.User) (*models.User, error) {
-		var(
-		firstName = "ilhamgepe"
-		lastName = "ilhamgepe"
-	)
-	return &models.User{
-		ID: 1,
-		FirstName: &firstName,
-		LastName: &lastName,
-		Email: "ilham@gmail.com",
-		Password: "ilhamgepe",		
-	},nil
+func (r *userRepositoryImpl) Update(user *models.User) error {
+	existingUser,err := r.FindById(user.ID)
+	if err != nil {
+		return err
+	}
+	if existingUser == nil {
+		return errors.New(fmt.Sprintf("User with ID %d not found", user.ID))
+	}
+
+
+	// Update the user in the database
+	q := "UPDATE users SET first_name = ?, last_name = ?, email = ? WHERE id = ?"
+	_,err = r.DB.Exec(q, user.FirstName, user.LastName, user.Email, user.ID)
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (r *userRepositoryImpl) UpdatePassword(id int, password string) error {
+	existingUser,err := r.FindById(id)
+	if err != nil {
+		return err
+	}
+	if existingUser == nil {
+		return errors.New(fmt.Sprintf("User with ID %d not found", id))
+	}
+	// update password
+	q := "UPDATE users SET password = ? where id = ?"
+	_,err = r.DB.Exec(q, password, id)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

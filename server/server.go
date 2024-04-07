@@ -1,7 +1,6 @@
 package server
 
 import (
-	"context"
 	"database/sql"
 	"fmt"
 	"log"
@@ -49,7 +48,7 @@ func NewServer() *http.Server {
 		}
 		fmt.Println("DB connection closed.")
 
-		if err := httpServer.Shutdown(context.Background()); err != nil {
+		if err := httpServer.Shutdown(nil); err != nil {
 			log.Fatal("failed to shutdown Server:", err)
 		}
 	}()

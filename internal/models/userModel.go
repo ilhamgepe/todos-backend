@@ -33,3 +33,8 @@ type Tokens struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
 }
+type JWTClaims struct {
+	Email string `json:"email"`
+	Sub   int    `json:"sub"`
+	Exp   float64  `json:"exp"`
+}
