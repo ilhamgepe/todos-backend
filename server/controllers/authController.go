@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/ilhamgepe/todos-backend/helper"
@@ -25,15 +26,19 @@ func (ac *AuthController) Register(c *gin.Context){
 		return
 	}
 
-	createdUser,err := ac.authUsecase.Register(&registerData)
+	err := ac.authUsecase.Register(&registerData)
 	if err != nil{
-		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		if strings.Contains(err.Error(), "email already exists") {
+			c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+			return
+		}
+		c.JSON(http.StatusInternalServerError, gin.H{"error": err.Error()})
 		return
 	}
 
 
 
-	c.JSON(http.StatusOK, createdUser)
+	c.JSON(http.StatusOK, gin.H{"message": "success"})
 }
 
 func (ac *AuthController) Login(c *gin.Context){

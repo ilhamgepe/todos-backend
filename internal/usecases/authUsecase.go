@@ -5,6 +5,7 @@ import (
 
 	"github.com/ilhamgepe/todos-backend/internal/models"
 	"github.com/ilhamgepe/todos-backend/internal/repositories"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type AuthUsecase struct {
@@ -15,12 +16,19 @@ func NewAuthUsecase(ur repositories.UserRepository) *AuthUsecase{
 	return &AuthUsecase{ur: ur}
 }
 
-func (a *AuthUsecase) Register(user *models.UserRegisterDTO) (*models.User,error){
-	createdUser,err := a.ur.Create(user)
+func (a *AuthUsecase) Register(user *models.UserRegisterDTO)error{
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(user.Password), bcrypt.DefaultCost)
 	if err != nil {
-		return nil,err
+		return errors.New("failed to hash password")
 	}
-	return createdUser,nil
+
+	user.Password = string(hashedPassword)
+
+	err = a.ur.Create(user)
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (a *AuthUsecase) Login(email string, password string) (bool,error){
